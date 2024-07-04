@@ -3,6 +3,7 @@ import requests
 import time
 import asyncio
 from telegram import Bot
+from telegram.constants import ParseMode
 from telegram.error import TelegramError
 import hashlib
 from markdownify import markdownify
@@ -21,7 +22,7 @@ if not URL:
 async def send_telegram_message(message):
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
     try:
-        await bot.send_message(chat_id=CHAT_ID, text=message)
+        await bot.send_message(chat_id=CHAT_ID, text=message, parse_mode=ParseMode.MARKDOWN)
     except TelegramError as e:
         print(f"Fehler beim Senden der Nachricht: {e}")
 
