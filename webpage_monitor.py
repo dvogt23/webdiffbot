@@ -17,14 +17,14 @@ CONTENT_FILE = hashlib.sha256(URL.encode('utf-8')).hexdigest()
 IGNORE = ('Copyright', 'Theme:', ' ', '\\ ')
 
 if not URL:
-    raise ValueError("Die Umgebungsvariable URL muss gesetzt sein.")
+    raise ValueError("You have to set URL env var.")
 
 async def send_telegram_message(message):
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
     try:
         await bot.send_message(chat_id=CHAT_ID, text=message, parse_mode=ParseMode.MARKDOWN)
     except TelegramError as e:
-        print(f"Fehler beim Senden der Nachricht: {e}")
+        print(f"Couldnt send message: {e}")
 
 def load_saved_content():
     try:
