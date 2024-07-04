@@ -1,0 +1,10 @@
+services:
+  webpage_monitor:
+    build: .
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - CHAT_ID=${CHAT_ID}
+      - URL=${URL}
+    volumes:
+      - ./:/app
+
