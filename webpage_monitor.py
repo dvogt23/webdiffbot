@@ -5,11 +5,15 @@ import asyncio
 from telegram import Bot
 from telegram.error import TelegramError
 import hashlib
+from markdownify import markdownify
+import subprocess
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 CHAT_ID = os.getenv('CHAT_ID')
 URL = os.getenv('URL')
-CONTENT_FILE = 'content_hash.txt'
+CONTENT_FILE = hashlib.sha256(URL.encode('utf-8')).hexdigest()
+
+IGNORE = ('Copyright', 'Theme:', ' ', '\\ ')
 
 if not URL:
     raise ValueError("Die Umgebungsvariable URL muss gesetzt sein.")
@@ -28,8 +32,8 @@ def load_saved_content():
     except FileNotFoundError:
         return None
 
-def save_content(content):
-    with open(CONTENT_FILE, 'w', encoding='utf-8') as file:
+def save_content(content, file_name):
+    with open(file_name, 'w', encoding='utf-8') as file:
         file.write(content)
 
 initial_content = load_saved_content()
@@ -38,19 +42,22 @@ async def monitor_website():
     global initial_content
 
     response = requests.get(URL)
-    h = hashlib.new('sha256')
-    current_content = hashlib.sha256(response.text.encode('utf-8')).hexdigest()
-
-    print(current_content)
-    print(URL)
+    content = markdownify(response.text, heading_style="ATX")
+    current_content = os.linesep.join([s for s in content.splitlines() if s and not s.startswith(IGNORE)])
 
     if initial_content is None:
-        save_content(current_content)
+        save_content(current_content, CONTENT_FILE)
         initial_content = current_content
 
     if current_content != initial_content:
-        await send_telegram_message('News: ' + URL)
-        save_content(current_content)  # Update the saved content
+        NEW_CONTENT = CONTENT_FILE + '.new'
+        save_content(current_content, NEW_CONTENT)
+        diff = subprocess.run(['diff', CONTENT_FILE, NEW_CONTENT], stdout=subprocess.PIPE)
+        message = 'News: ' + URL + '\n\n' + '```diff\n' + diff.stdout.decode("utf-8") + '\n```'
+        # print(message)
+        await send_telegram_message(message)
+        save_content(current_content, CONTENT_FILE)
+        subprocess.run(['rm', NEW_CONTENT])
         initial_content = current_content
 
 if __name__ == "__main__":
