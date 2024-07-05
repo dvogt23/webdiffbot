@@ -13,8 +13,7 @@ To track a website and get notified about changes, you need to `cp .env.sample
 The `CHATID` you can get here: [RawDataBot](https://t.me/RawDataBot)
 
 Then build `docker compose build` and run your container for a check `docker
-compose run webpage_monitor`. If you have a different hash, than in
-`content_hash.txt`, you will get notified by Telegram.
+compose run webpage_monitor` or run it permanently with `docker compose up -d` if you have set an `INTERVALL` in your `.env` file. each url in your envs will get a hashed filename with the actual markdownifief content. in your notification about content change, you will get the specific diff via telegram. 
 
 ## License
 
